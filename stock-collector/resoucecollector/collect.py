@@ -82,4 +82,45 @@ class SofthompoCollector(Collector):
         with zipfile.ZipFile(dist) as inputFile:
             inputFile.extractall(self.dire_path)
             os.remove(dist)
-        
+
+
+class SofthompoShinyoCollector(object):
+    def __init__(self, config):
+        # 過去のファイル群から過去日リストを取得する
+        self.dire_path = config["softhompo_shinyo_dire_path"]
+        files = os.listdir(path=self.dire_path)
+        pattern = re.compile("syumatsu([0-9]{8})00.csv")
+        pasts = list(map(lambda f: pattern.search(f).group(1), files))
+
+        # 除外日リストを取得する
+        f = open(config["exclude_days_filename"], mode="r")
+        exclude_days = list(map(lambda d: datetime.strptime(d, "%Y-%m-%d"), list(map(lambda l: l.replace("\n", ""), f.readlines()))))
+        f.close
+
+        # 次の対象営業日を取得する
+        self.target_day = datetime.strptime(sorted(pasts, reverse=True)[0], "%Y%m%d") + timedelta(days=7)
+        while self.target_day in exclude_days:
+            self.target_day = self.target_day - timedelta(days=1)
+
+        self.zipname = "syumatsu{}00.csv".format(self.target_day)
+        self.url = "http://softhompo.a.la9.jp/Data/margin/thisMonth/" + self.zipname
+
+    def download(self):
+        try:
+            source = urlopen(self.url, timeout=3).read()
+        except HTTPError as e:
+            print("Failed to get softhomp data.")
+            return
+
+        dist = self.dire_path + self.zipname
+        with open(dist, mode="wb") as f:
+            f.write(source)
+
+        if 1000 > os.path.getsize(dist):
+            print("Failed to get softhomp data.")
+            os.remove(dist)
+            return
+
+        with zipfile.ZipFile(dist) as inputFile:
+            inputFile.extractall(self.dire_path)
+            os.remove(dist)
