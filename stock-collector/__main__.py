@@ -6,6 +6,9 @@ def main():
     config.read("config.ini")
 
     clt = resoucecollector.Context(config)
+    clt.taisyaku.download()
+    clt.softhompo.download()
+    clt.softhompoShinyo.download()
 
 
 if __name__ == '__main__':
