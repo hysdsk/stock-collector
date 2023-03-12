@@ -49,3 +49,12 @@ class Context(object):
                         symbol["credit_balance"] =      t["credit_balance"]
             for symbol in symbols:
                 self.symbolsconnector.save_symbol(symbol)
+
+    def weekly_collect(self):
+        weekenddays = list(map(lambda e: e["weekend_date"], self.symbolsconnector.find_weekenddays()))
+        pasts = self.softhompoShinyo.get_pasts()
+        targets = list(filter(lambda d: d not in weekenddays, pasts))
+        for target in targets:
+            s_data = self.softhompoShinyo.read(target)
+            for data in s_data:
+                self.symbolsconnector.save_symbol_week(data)
