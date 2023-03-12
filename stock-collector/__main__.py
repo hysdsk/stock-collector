@@ -7,6 +7,7 @@ def main():
     clt = resoucecollector.Context(config)
     clt.download()
     clt.daily_collect()
+    clt.weekly_collect()
 
 if __name__ == '__main__':
     main()
