@@ -137,6 +137,8 @@ class SofthompoCollector(Collector):
 
 class SofthompoShinyoCollector(object):
     def __init__(self, config):
+        self.zipnametemplate = "syumatsu{}00.zip"
+        self.csvnametemplate = "syumatsu{}00.csv"
         self.dire_path = config["softhompo_shinyo_dire_path"]
         self.filepattern = re.compile("syumatsu([0-9]{8})00.csv")
 
@@ -150,7 +152,7 @@ class SofthompoShinyoCollector(object):
         while self.target_day in exclude_days:
             self.target_day = self.target_day - timedelta(days=1)
 
-        self.zipname = "syumatsu{}00.zip".format(self.get_target())
+        self.zipname = self.zipnametemplate.format(self.get_target())
         self.url = "http://softhompo.a.la9.jp/Data/margin/thisMonth/" + self.zipname
 
     # 過去のファイル群から過去日リストを取得する
@@ -180,3 +182,24 @@ class SofthompoShinyoCollector(object):
         with zipfile.ZipFile(dist) as inputFile:
             inputFile.extractall(self.dire_path)
             os.remove(dist)
+
+    def read(self, target_day):
+        with open(self.dire_path + self.csvnametemplate.format(target_day)) as f:
+            rows = csv.reader(f)
+            rows = list(filter(lambda row: 16 <= len(row) and re.compile("^[0-9]{4}0$").match(row[2]), rows))
+            return list(map(lambda row: {
+                "symbol_code":                     row[2][0:4],
+                "weekend_date":                    target_day,
+                "sell_balance":                    None if "-" == row[4] else int(row[4]),
+                "sell_balance_per":                None if "-" == row[5] else int(row[5]),
+                "buy_balance":                     None if "-" == row[6] else int(row[6]),
+                "buy_balance_per":                 None if "-" == row[7] else int(row[7]),
+                "sell_balance_general_credit":     None if "-" == row[8] else int(row[8]),
+                "sell_balance_general_credit_per": None if "-" == row[9] else int(row[9]),
+                "sell_balance_system_credit":      None if "-" == row[10] else int(row[10]),
+                "sell_balance_system_credit_per":  None if "-" == row[11] else int(row[11]),
+                "buy_balance_general_credit":      None if "-" == row[12] else int(row[12]),
+                "buy_balance_general_credit_per":  None if "-" == row[13] else int(row[13]),
+                "buy_balance_system_credit":       None if "-" == row[14] else int(row[14]),
+                "buy_balance_system_credit_per":   None if "-" == row[15] else int(row[15])
+            }, rows))
