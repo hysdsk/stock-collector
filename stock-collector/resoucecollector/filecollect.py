@@ -186,7 +186,7 @@ class SofthompoShinyoCollector(object):
     def read(self, target_day):
         with open(self.dire_path + self.csvnametemplate.format(target_day)) as f:
             rows = csv.reader(f)
-            rows = list(filter(lambda row: 16 == len(row) and re.compile("^[0-9]{4}0$").match(row[2]), rows))
+            rows = list(filter(lambda row: 16 <= len(row) and re.compile("^[0-9]{4}0$").match(row[2]), rows))
             return list(map(lambda row: {
                 "symbol_code":                     row[2][0:4],
                 "weekend_date":                    target_day,

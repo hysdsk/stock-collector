@@ -43,7 +43,7 @@ class SymbolsConnector(Connector):
                 symbol_weekly_info
         """
         rows = super().find(sql)
-        return list(map(lambda row: {"opening_date": str(row[0])}, rows))
+        return list(map(lambda row: {"weekend_date": str(row[0])}, rows))
 
 
     def find_symbols(self):
@@ -181,7 +181,7 @@ class SymbolsConnector(Connector):
                 sell_balance_system_credit_per = VALUES(sell_balance_system_credit_per),
                 buy_balance_general_credit = VALUES(buy_balance_general_credit),
                 buy_balance_general_credit_per = VALUES(buy_balance_general_credit_per),
-                buy_balance_system_credit = VALUESbuy_balance_system_credit),
+                buy_balance_system_credit = VALUES(buy_balance_system_credit),
                 buy_balance_system_credit_per = VALUES(buy_balance_system_credit_per)
         """
         super().save(sql, params=(
