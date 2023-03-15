@@ -33,7 +33,7 @@ class SymbolsConnector(Connector):
                 symbol_daily_info
         """
         rows = super().find(sql)
-        return list(map(lambda row: {"opening_date": str(row[0])}, rows))
+        return [{"opening_date": str(row[0])} for row in rows]
 
     def find_weekenddays(self):
         sql = """
@@ -43,7 +43,7 @@ class SymbolsConnector(Connector):
                 symbol_weekly_info
         """
         rows = super().find(sql)
-        return list(map(lambda row: {"weekend_date": str(row[0])}, rows))
+        return [{"weekend_date": str(row[0])} for row in rows]
 
 
     def find_symbols(self):
@@ -55,7 +55,7 @@ class SymbolsConnector(Connector):
                 symbols
         """
         rows = super().find(sql)
-        return list(map(lambda row: {
+        return [{
             "symbol_code":           row[0],
             "opening_date":          None,
             "first_opening_price":   None,
@@ -78,7 +78,7 @@ class SymbolsConnector(Connector):
             "lending_balance":       None,
             "credit_balance":        None,
             "exchange_code":         row[1]
-        }, rows))
+        } for row in rows]
 
     def save_symbol(self, symbol):
         sql = """

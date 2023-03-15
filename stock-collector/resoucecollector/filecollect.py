@@ -12,7 +12,7 @@ class Collector(object):
 
         # 除外日リストを取得する
         f = open(exclude_days_filename, mode="r")
-        exclude_days = list(map(lambda d: datetime.strptime(d, "%Y-%m-%d"), list(map(lambda l: l.replace("\n", ""), f.readlines()))))
+        exclude_days = [datetime.strptime(l.replace("\n", ""), "%Y-%m-%d") for l in f.readlines()]
         f.close
 
         # 次の対象営業日を取得する
@@ -23,7 +23,7 @@ class Collector(object):
     # 過去のファイル群から過去日リストを取得する
     def get_pasts(self):
         filenames = os.listdir(path=self.dire_path)
-        return list(map(lambda f: self.filepattern.search(f).group(1), filenames))
+        return [self.filepattern.search(f).group(1) for f in filenames]
     
     def get_target(self):
         return self.target_day.strftime("%Y%m%d")
@@ -56,10 +56,8 @@ class TaisyakuCollector(Collector):
 
     def read(self, target_day):
         with open(self.dire_path + self.csvnametemplate.format(target_day)) as f:
-            rows = csv.reader(f)
-            rows = list(filter(lambda row: re.compile("^[0-9]{4}$").match(row[1]), rows))
-            rows = list(filter(lambda row: "1" == self.name_to_code(row[3]), rows))
-            return list(map(lambda row: {
+            rows = [row for row in csv.reader(f) if re.compile("^[0-9]{4}$").match(row[1]) and "1" == self.name_to_code(row[3])]
+            return [{
                 "symbol_code":         row[1],
                 "exchange_code":       self.name_to_code(row[3]),
                 "loaning_amount":      int(row[4]),
@@ -69,7 +67,7 @@ class TaisyakuCollector(Collector):
                 "paid_lending_amount": int(row[8]),
                 "lending_balance":     int(row[9]),
                 "credit_balance":      int(row[10])
-            }, rows))
+            } for row in rows]
 
     def name_to_code(self, exchange_name):
         if "東証およびＰＴＳ" == exchange_name:
@@ -117,8 +115,8 @@ class SofthompoCollector(Collector):
     def read(self, target_day):
         with open(self.dire_path + self.csvnametemplate.format(target_day)) as f:
             rows = csv.reader(f)
-            rows = list(filter(lambda row: re.compile("^[0-9]{4}$").match(row[0]), rows))
-            return list(map(lambda row: {
+            rows = [row for row in rows if re.compile("^[0-9]{4}$").match(row[0])]
+            return [{
                 "symbol_code":           row[0],
                 "first_opening_price":   None if "－" == row[4] else float(row[4]),
                 "first_high_price":      None if "－" == row[5] else float(row[5]),
@@ -132,7 +130,7 @@ class SofthompoCollector(Collector):
                 "trading_volume":        None if "－" == row[15] else float(row[15]),
                 "trading_value":         None if "－" == row[16] else float(row[16]),
                 "vwap":                  None if "－" == row[14] else float(row[14]) 
-            }, rows))
+            } for row in rows]
 
 
 class SofthompoShinyoCollector(object):
@@ -144,7 +142,7 @@ class SofthompoShinyoCollector(object):
 
         # 除外日リストを取得する
         f = open(config["exclude_days_filename"], mode="r")
-        exclude_days = list(map(lambda d: datetime.strptime(d, "%Y-%m-%d"), list(map(lambda l: l.replace("\n", ""), f.readlines()))))
+        exclude_days = [datetime.strptime(l.replace("\n", ""), "%Y-%m-%d") for l in f.readlines()]
         f.close
 
         # 次の対象営業日を取得する
@@ -158,7 +156,7 @@ class SofthompoShinyoCollector(object):
     # 過去のファイル群から過去日リストを取得する
     def get_pasts(self):
         files = os.listdir(path=self.dire_path)
-        return list(map(lambda f: self.filepattern.search(f).group(1), files))
+        return [self.filepattern.search(f).group(1) for f in files]
 
     def get_target(self):
         return self.target_day.strftime("%Y%m%d")
@@ -186,8 +184,8 @@ class SofthompoShinyoCollector(object):
     def read(self, target_day):
         with open(self.dire_path + self.csvnametemplate.format(target_day)) as f:
             rows = csv.reader(f)
-            rows = list(filter(lambda row: 16 <= len(row) and re.compile("^[0-9]{4}0$").match(row[2]), rows))
-            return list(map(lambda row: {
+            rows = [row for row in rows if 16 <= len(row) and re.compile("^[0-9]{4}0$").match(row[2])]
+            return [{
                 "symbol_code":                     row[2][0:4],
                 "weekend_date":                    target_day,
                 "sell_balance":                    None if "-" == row[4] else int(row[4]),
@@ -202,4 +200,4 @@ class SofthompoShinyoCollector(object):
                 "buy_balance_general_credit_per":  None if "-" == row[13] else int(row[13]),
                 "buy_balance_system_credit":       None if "-" == row[14] else int(row[14]),
                 "buy_balance_system_credit_per":   None if "-" == row[15] else int(row[15])
-            }, rows))
+            } for row in rows]
