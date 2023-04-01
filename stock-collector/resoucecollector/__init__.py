@@ -14,10 +14,10 @@ class Context(object):
         self.softhompoShinyo.download()
 
     def daily_collect(self):
-        openingdays = list(map(lambda e: e["opening_date"], self.symbolsconnector.find_openingdays()))
+        openingdays = [e["opening_date"] for e in self.symbolsconnector.find_openingdays()]
         pasts = self.taisyaku.get_pasts()
         pasts.extend(self.softhompo.get_pasts())
-        targets = list(filter(lambda d: d not in openingdays, [x for x in set(pasts) if pasts.count(x) > 1]))
+        targets = [x for x in set(pasts) if pasts.count(x) > 1 and x not in openingdays]
         for target in targets:
             symbols = self.symbolsconnector.find_symbols()
             t_data = self.taisyaku.read(target)
@@ -51,9 +51,9 @@ class Context(object):
                 self.symbolsconnector.save_symbol(symbol)
 
     def weekly_collect(self):
-        weekenddays = list(map(lambda e: e["weekend_date"], self.symbolsconnector.find_weekenddays()))
+        weekenddays = [e["weekend_date"] for e in self.symbolsconnector.find_weekenddays()]
         pasts = self.softhompoShinyo.get_pasts()
-        targets = list(filter(lambda d: d not in weekenddays, pasts))
+        targets = [d for d in pasts if d not in weekenddays]
         for target in targets:
             s_data = self.softhompoShinyo.read(target)
             for data in s_data:
