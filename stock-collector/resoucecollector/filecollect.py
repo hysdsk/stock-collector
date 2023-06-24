@@ -1,4 +1,5 @@
-import os, re
+import os
+import re
 import zipfile
 import csv
 from datetime import datetime, timedelta
@@ -188,16 +189,22 @@ class SofthompoShinyoCollector(object):
             return [{
                 "symbol_code":                     row[2][0:4],
                 "weekend_date":                    target_day,
-                "sell_balance":                    None if "-" == row[4] else int(row[4]),
-                "sell_balance_per":                None if "-" == row[5] else int(row[5]),
-                "buy_balance":                     None if "-" == row[6] else int(row[6]),
-                "buy_balance_per":                 None if "-" == row[7] else int(row[7]),
-                "sell_balance_general_credit":     None if "-" == row[8] else int(row[8]),
-                "sell_balance_general_credit_per": None if "-" == row[9] else int(row[9]),
-                "sell_balance_system_credit":      None if "-" == row[10] else int(row[10]),
-                "sell_balance_system_credit_per":  None if "-" == row[11] else int(row[11]),
-                "buy_balance_general_credit":      None if "-" == row[12] else int(row[12]),
-                "buy_balance_general_credit_per":  None if "-" == row[13] else int(row[13]),
-                "buy_balance_system_credit":       None if "-" == row[14] else int(row[14]),
-                "buy_balance_system_credit_per":   None if "-" == row[15] else int(row[15])
+                "sell_balance":                    self._extract(row[4]),
+                "sell_balance_per":                self._extract(row[5]),
+                "buy_balance":                     self._extract(row[6]),
+                "buy_balance_per":                 self._extract(row[7]),
+                "sell_balance_general_credit":     self._extract(row[8]),
+                "sell_balance_general_credit_per": self._extract(row[9]),
+                "sell_balance_system_credit":      self._extract(row[10]),
+                "sell_balance_system_credit_per":  self._extract(row[11]),
+                "buy_balance_general_credit":      self._extract(row[12]),
+                "buy_balance_general_credit_per":  self._extract(row[13]),
+                "buy_balance_system_credit":       self._extract(row[14]),
+                "buy_balance_system_credit_per":   self._extract(row[15])
             } for row in rows]
+
+    def _extract(self, data):
+        if data == "-":
+            return None
+        matched = re.findall("[0-9]*$", data)
+        return int("".join(matched))
