@@ -206,5 +206,4 @@ class SofthompoShinyoCollector(object):
     def _extract(self, data):
         if data == "-":
             return None
-        matched = re.findall("[0-9]*$", data)
-        return int("".join(matched))
+        return int(re.sub("[^0-9]", "", date))
