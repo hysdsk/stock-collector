@@ -70,7 +70,7 @@ class JSDACollector(object):
         df.reset_index(inplace=True)
         df["symbol_code"] = df["symbol_code"] / 10
         df["symbol_code"] = df["symbol_code"].astype("int")
-        return {data["symbol_code"]: data for data in df.values.tolist()}
+        return {str(data[0]): data for data in df.values.tolist()}
 
 class JSDANewDealCollector(JSDACollector):
     def __init__(self, config: dict):

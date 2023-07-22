@@ -72,21 +72,23 @@ class Context(object):
             balances = self.jsdabalance.read(target)
             for symbol in symbols:
                 code = symbol["symbol_code"]
+                if code not in newdeals or code not in balances:
+                    continue
                 newdeal = {
-                    "lend_contract":                  newdeals[code]["lend_qty"],
-                    "lend_contract_value":            newdeals[code]["lend_value"],
-                    "borrow_contract_self":           newdeals[code]["borrow_self_qty"],
-                    "borrow_contract_self_value":     newdeals[code]["borrow_self_value"],
-                    "borrow_contract_sublease":       newdeals[code]["borrow_sublease_qty"],
-                    "borrow_contract_sublease_value": newdeals[code]["borrow_sublease_value"],
+                    "lend_contract":                  newdeals[code][1],
+                    "lend_contract_value":            newdeals[code][2],
+                    "borrow_contract_self":           newdeals[code][3],
+                    "borrow_contract_self_value":     newdeals[code][4],
+                    "borrow_contract_sublease":       newdeals[code][5],
+                    "borrow_contract_sublease_value": newdeals[code][6],
                 }
                 balance = {
-                    "lend_balance":                  balances[code]["lend_qty"],
-                    "lend_balance_value":            balances[code]["lend_value"],
-                    "borrow_balance_self":           balances[code]["borrow_self_qty"],
-                    "borrow_balance_self_value":     balances[code]["borrow_self_value"],
-                    "borrow_balance_sublease":       balances[code]["borrow_sublease_qty"],
-                    "borrow_balance_sublease_value": balances[code]["borrow_sublease_value"],
+                    "lend_balance":                  balances[code][1],
+                    "lend_balance_value":            balances[code][2],
+                    "borrow_balance_self":           balances[code][3],
+                    "borrow_balance_self_value":     balances[code][4],
+                    "borrow_balance_sublease":       balances[code][5],
+                    "borrow_balance_sublease_value": balances[code][6],
                 }
                 merged = symbol | newdeal | balance
                 self.symbolsconnector.save_symbol_week(merged)
