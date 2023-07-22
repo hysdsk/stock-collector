@@ -1,17 +1,23 @@
 from . import filecollect
+from .collecter import jsda
 from . import dbconnect
+import collections
 
 class Context(object):
     def __init__(self, config):
         self.taisyaku = filecollect.TaisyakuCollector(config=config["resources"])
         self.softhompo = filecollect.SofthompoCollector(config=config["resources"])
         self.softhompoShinyo = filecollect.SofthompoShinyoCollector(config=config["resources"])
+        self.jsdanewdeal = jsda.JSDANewDealCollector(config=config["resources"])
+        self.jsdabalance = jsda.JSDABalanceCollector(config=config["resources"])
         self.symbolsconnector = dbconnect.SymbolsConnector(config=config["database"])
 
     def download(self):
         self.taisyaku.download()
         self.softhompo.download()
         self.softhompoShinyo.download()
+        self.jsdanewdeal.download()
+        self.jsdabalance.download()
 
     def daily_collect(self):
         openingdays = [e["opening_date"] for e in self.symbolsconnector.find_openingdays()]
@@ -51,10 +57,36 @@ class Context(object):
                 self.symbolsconnector.save_symbol(symbol)
 
     def weekly_collect(self):
+        # 各ファイル日付と登録済み週末日付を突合し未登録の日付を対象日とする
         weekenddays = [e["weekend_date"] for e in self.symbolsconnector.find_weekenddays()]
-        pasts = self.softhompoShinyo.get_pasts()
+        symbols_pasts = self.softhompoShinyo.get_pasts()
+        newdeal_pasts = self.jsdanewdeal.get_pasts()
+        balance_pasts = self.jsdabalance.get_pasts()
+        pasts = collections.Counter(symbols_pasts + newdeal_pasts + balance_pasts)
+        pasts = [p for p in pasts if pasts[p] == 3]
         targets = [d for d in pasts if d not in weekenddays]
+
         for target in targets:
-            s_data = self.softhompoShinyo.read(target)
-            for data in s_data:
-                self.symbolsconnector.save_symbol_week(data)
+            symbols = self.softhompoShinyo.read(target)
+            newdeals = self.jsdanewdeal.read(target)
+            balances = self.jsdabalance.read(target)
+            for symbol in symbols:
+                code = symbol["symbol_code"]
+                newdeal = {
+                    "lend_contract":                  newdeals[code]["lend_qty"],
+                    "lend_contract_value":            newdeals[code]["lend_value"],
+                    "borrow_contract_self":           newdeals[code]["borrow_self_qty"],
+                    "borrow_contract_self_value":     newdeals[code]["borrow_self_value"],
+                    "borrow_contract_sublease":       newdeals[code]["borrow_sublease_qty"],
+                    "borrow_contract_sublease_value": newdeals[code]["borrow_sublease_value"],
+                }
+                balance = {
+                    "lend_balance":                  balances[code]["lend_qty"],
+                    "lend_balance_value":            balances[code]["lend_value"],
+                    "borrow_balance_self":           balances[code]["borrow_self_qty"],
+                    "borrow_balance_self_value":     balances[code]["borrow_self_value"],
+                    "borrow_balance_sublease":       balances[code]["borrow_sublease_qty"],
+                    "borrow_balance_sublease_value": balances[code]["borrow_sublease_value"],
+                }
+                merged = symbol | newdeal | balance
+                self.symbolsconnector.save_symbol_week(merged)

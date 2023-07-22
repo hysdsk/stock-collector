@@ -36,11 +36,14 @@ class SymbolsConnector(Connector):
         return [{"opening_date": str(row[0])} for row in rows]
 
     def find_weekenddays(self):
+        # TODO: 初回投入完了後に削除する "lend_balance is not null"
         sql = """
             SELECT DISTINCT
                 weekend_date
             FROM
                 symbol_weekly_info
+            WHERE
+				lend_balance is not null
         """
         rows = super().find(sql)
         return [{"weekend_date": str(row[0])} for row in rows]
@@ -167,9 +170,22 @@ class SymbolsConnector(Connector):
                 buy_balance_general_credit,
                 buy_balance_general_credit_per,
                 buy_balance_system_credit,
-                buy_balance_system_credit_per
+                buy_balance_system_credit_per,
+                lend_balance,
+                lend_balance_value,
+                borrow_balance_self,
+                borrow_balance_self_value,
+                borrow_balance_sublease,
+                borrow_balance_sublease_value,
+                lend_contract,
+                lend_contract_value,
+                borrow_contract_self,
+                borrow_contract_self_value,
+                borrow_contract_sublease,
+                borrow_contract_sublease_value
             ) VALUES (
-                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
             ) ON DUPLICATE KEY UPDATE
                 sell_balance = VALUES(sell_balance),
                 sell_balance_per = VALUES(sell_balance_per),
@@ -182,7 +198,19 @@ class SymbolsConnector(Connector):
                 buy_balance_general_credit = VALUES(buy_balance_general_credit),
                 buy_balance_general_credit_per = VALUES(buy_balance_general_credit_per),
                 buy_balance_system_credit = VALUES(buy_balance_system_credit),
-                buy_balance_system_credit_per = VALUES(buy_balance_system_credit_per)
+                buy_balance_system_credit_per = VALUES(buy_balance_system_credit_per),
+                lend_balance = VALUES(lend_balance),
+                lend_balance_value = VALUES(lend_balance_value),
+                borrow_balance_self = VALUES(borrow_balance_self),
+                borrow_balance_self_value = VALUES(borrow_balance_self_value),
+                borrow_balance_sublease = VALUES(borrow_balance_sublease),
+                borrow_balance_sublease_value = VALUES(borrow_balance_sublease_value),
+                lend_contract = VALUES(lend_contract),
+                lend_contract_value = VALUES(lend_contract_value),
+                borrow_contract_self = VALUES(borrow_contract_self),
+                borrow_contract_self_value = VALUES(borrow_contract_self_value),
+                borrow_contract_sublease = VALUES(borrow_contract_sublease),
+                borrow_contract_sublease_value = VALUES(borrow_contract_sublease_value)
         """
         super().save(sql, params=(
             symbol["symbol_code"],
@@ -198,5 +226,17 @@ class SymbolsConnector(Connector):
             symbol["buy_balance_general_credit"],
             symbol["buy_balance_general_credit_per"],
             symbol["buy_balance_system_credit"],
-            symbol["buy_balance_system_credit_per"]
+            symbol["buy_balance_system_credit_per"],
+            symbol["lend_balance"],
+            symbol["lend_balance_value"],
+            symbol["borrow_balance_self"],
+            symbol["borrow_balance_self_value"],
+            symbol["borrow_balance_sublease"],
+            symbol["borrow_balance_sublease_value"],
+            symbol["lend_contract"],
+            symbol["lend_contract_value"],
+            symbol["borrow_contract_self"],
+            symbol["borrow_contract_self_value"],
+            symbol["borrow_contract_sublease"],
+            symbol["borrow_contract_sublease_value"],
         ))
