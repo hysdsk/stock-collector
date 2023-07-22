@@ -36,14 +36,11 @@ class SymbolsConnector(Connector):
         return [{"opening_date": str(row[0])} for row in rows]
 
     def find_weekenddays(self):
-        # TODO: 初回投入完了後に削除する "lend_balance is not null"
         sql = """
             SELECT DISTINCT
                 weekend_date
             FROM
                 symbol_weekly_info
-            WHERE
-				lend_balance is not null
         """
         rows = super().find(sql)
         return [{"weekend_date": str(row[0])} for row in rows]
