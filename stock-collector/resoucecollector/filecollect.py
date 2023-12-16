@@ -166,7 +166,7 @@ class SofthompoShinyoCollector(object):
         try:
             source = urlopen(self.url, timeout=3).read()
         except HTTPError as e:
-            print("Failed to get softhomp shinyo data.")
+            print(f"Failed to get softhomp shinyo data. url: {self.url} error: {e}")
             return
 
         dist = self.dire_path + self.zipname
@@ -174,7 +174,7 @@ class SofthompoShinyoCollector(object):
             f.write(source)
 
         if 1000 > os.path.getsize(dist):
-            print("Failed to get softhomp shinyo data.")
+            print(f"Failed to get softhomp shinyo data. url: {self.url} error: {e}")
             os.remove(dist)
             return
 
@@ -185,7 +185,7 @@ class SofthompoShinyoCollector(object):
     def read(self, target_day):
         with open(self.dire_path + self.csvnametemplate.format(target_day)) as f:
             rows = csv.reader(f)
-            rows = [row for row in rows if 16 <= len(row) and re.compile("^[0-9]{4}0$").match(row[2])]
+            rows = [row for row in rows if 16 <= len(row) and re.compile(r"^\d{4,5}$").match(row[2])]
             return [{
                 "symbol_code":                     row[2][0:4],
                 "weekend_date":                    target_day,
