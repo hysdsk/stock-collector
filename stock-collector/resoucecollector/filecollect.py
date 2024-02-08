@@ -57,7 +57,7 @@ class TaisyakuCollector(Collector):
 
     def read(self, target_day):
         with open(self.dire_path + self.csvnametemplate.format(target_day)) as f:
-            rows = [row for row in csv.reader(f) if re.compile("^[0-9]{4}$").match(row[1]) and "1" == self.name_to_code(row[3])]
+            rows = [row for row in csv.reader(f) if re.compile("^[0-9][A-Z0-9][0-9][A-Z0-9]$").match(row[1]) and "1" == self.name_to_code(row[3])]
             return [{
                 "symbol_code":         row[1],
                 "exchange_code":       self.name_to_code(row[3]),
@@ -116,7 +116,7 @@ class SofthompoCollector(Collector):
     def read(self, target_day):
         with open(self.dire_path + self.csvnametemplate.format(target_day)) as f:
             rows = csv.reader(f)
-            rows = [row for row in rows if re.compile("^[0-9]{4}$").match(row[0])]
+            rows = [row for row in rows if re.compile("^[0-9][A-Z0-9][0-9][A-Z0-9]$").match(row[0])]
             return [{
                 "symbol_code":           row[0],
                 "first_opening_price":   None if "－" == row[4] else float(row[4]),
