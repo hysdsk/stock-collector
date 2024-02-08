@@ -1,5 +1,6 @@
 from mysql import connector as mc
 
+
 class Connector(object):
     def __init__(self, config):
         self.host = config["db_host"]
@@ -12,7 +13,7 @@ class Connector(object):
             cursor = connection.cursor()
             cursor.execute(sql, params)
             return cursor.fetchall()
-    
+
     def save(self, sql, params):
         with mc.connect(host=self.host, user=self.user, password=self.pswd, database=self.name) as connection:
             cursor = connection.cursor()
@@ -44,7 +45,6 @@ class SymbolsConnector(Connector):
         """
         rows = super().find(sql)
         return [{"weekend_date": str(row[0])} for row in rows]
-
 
     def find_symbols(self):
         sql = """
@@ -237,3 +237,20 @@ class SymbolsConnector(Connector):
             symbol["borrow_contract_sublease"],
             symbol["borrow_contract_sublease_value"],
         ))
+
+
+class EventsConnector(Connector):
+    def __init__(self, config):
+        super().__init__(config)
+
+    def find_closing_days(self):
+        sql = """
+            SELECT DISTINCT
+                day
+            FROM
+                schedules
+            WHERE
+                event_id = 1
+        """
+        rows = super().find(sql)
+        return [{"day": row[0]} for row in rows]
