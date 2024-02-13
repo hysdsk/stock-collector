@@ -68,8 +68,8 @@ class JSDACollector(object):
         # 銘柄コードから下一桁の予備コードを削除する
         df = df.groupby("symbol_code").sum()
         df.reset_index(inplace=True)
-        df["symbol_code"] = df["symbol_code"] / 10
-        df["symbol_code"] = df["symbol_code"].astype("int")
+        df["symbol_code"] = df["symbol_code"].astype("string")
+        df["symbol_code"] = df["symbol_code"].str.strip().str[0:4]
         return {str(data[0]): data for data in df.values.tolist()}
 
 class JSDANewDealCollector(JSDACollector):
